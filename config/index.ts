@@ -23,11 +23,8 @@ export const AppConfig = {
   },
 
   focusDurationsMinutes: [15, 30, 60, 120, 240],
-  unlockDurationsMinutes: [5, 15, 30],
 
   defaults: {
-    unlockWaitSeconds: 15,
-    maxUnlocksPerDay: 3,
     blockMessage: 'Stay focused. You can do this!',
   },
 } as const;

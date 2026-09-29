@@ -1,8 +1,6 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { useState } from 'react';
 import { Alert, Pressable, StyleSheet, View } from 'react-native';
 
-import { PinSheet } from '@/components/pin-sheet';
 import { SessionCard } from '@/components/session-card';
 import { AppText } from '@/components/ui/app-text';
 import { Button } from '@/components/ui/button';
@@ -25,16 +23,13 @@ export function SessionsScreen({ navigation }: MainTabScreenProps<'Sessions'>) {
   const { colors } = useTheme();
   const { settings } = useSettings();
   const { schedules, toggleSchedule, getScheduleApps, now } = useBlocker();
-  const [pendingEndId, setPendingEndId] = useState<string | null>(null);
-
   const nowDate = new Date(now);
   const sessions = sortSessions(schedules, nowDate);
   const runningCount = sessions.filter((s) => getScheduleActiveUntil(s, nowDate) !== null).length;
 
   const endSession = (schedule: Schedule) => {
     if (isScheduleLocked(schedule, settings.strictMode, new Date())) {
-      if (settings.pin) setPendingEndId(schedule.id);
-      else Alert.alert('Strict mode is on', 'This session is running and cannot be ended without a PIN.');
+      Alert.alert('Strict mode is on', 'This session is running and cannot be ended until it finishes.');
       return;
     }
     Alert.alert(`End “${schedule.name}”?`, 'It will stop and won’t run again until you start it.', [
@@ -84,17 +79,6 @@ export function SessionsScreen({ navigation }: MainTabScreenProps<'Sessions'>) {
           />
         ))
       )}
-
-      <PinSheet
-        visible={pendingEndId !== null}
-        expectedPin={settings.pin}
-        hint="To end this session"
-        onClose={() => setPendingEndId(null)}
-        onSuccess={() => {
-          if (pendingEndId) toggleSchedule(pendingEndId);
-          setPendingEndId(null);
-        }}
-      />
     </Screen>
   );
 }

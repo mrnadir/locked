@@ -10,10 +10,6 @@ export const DefaultSettings: Settings = {
   themePreference: 'system',
   notificationsEnabled: true,
   strictMode: false,
-  unlockMethod: 'timer',
-  unlockWaitSeconds: AppConfig.defaults.unlockWaitSeconds,
-  maxUnlocksPerDay: AppConfig.defaults.maxUnlocksPerDay,
-  pin: null,
   blockScreen: {
     message: AppConfig.defaults.blockMessage,
     accentColor: Palette.primary,
@@ -29,7 +25,6 @@ interface SettingsContextValue {
   updateSettings: (patch: Partial<Settings>) => void;
   updateBlockScreen: (patch: Partial<BlockScreenStyle>) => void;
   completeOnboarding: () => void;
-  resetSettings: () => void;
 }
 
 const SettingsContext = createContext<SettingsContextValue | null>(null);
@@ -76,11 +71,6 @@ export function SettingsProvider({ children }: PropsWithChildren) {
     completeOnboarding: () => {
       setOnboardingDone(true);
       saveJSON(StorageKeys.onboardingDone, true);
-    },
-    resetSettings: () => {
-      setSettings(DefaultSettings);
-      setOnboardingDone(false);
-      saveJSON(StorageKeys.onboardingDone, false);
     },
   };
 

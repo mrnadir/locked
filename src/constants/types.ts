@@ -55,7 +55,6 @@ export interface ActiveBlock extends BlockStatus {
   appIds: string[];
 }
 
-export type UnlockMethod = 'timer' | 'pin' | 'none';
 export type ThemePreference = 'system' | 'light' | 'dark';
 
 export interface BlockScreenStyle {
@@ -70,10 +69,6 @@ export interface Settings {
   themePreference: ThemePreference;
   notificationsEnabled: boolean;
   strictMode: boolean;
-  unlockMethod: UnlockMethod;
-  unlockWaitSeconds: number;
-  maxUnlocksPerDay: number;
-  pin: string | null;
   blockScreen: BlockScreenStyle;
 }
 
@@ -91,9 +86,4 @@ export interface DailyUsage {
   date: string;
   totalMinutes: number;
   apps: AppUsage[];
-}
-
-export interface TemporaryUnlock {
-  appId: string;
-  until: number;
 }

@@ -1,27 +1,17 @@
 import { AppConfig } from '@config';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import * as WebBrowser from 'expo-web-browser';
-import { Alert, Linking, StyleSheet, TextInput, View } from 'react-native';
+import { Alert, Pressable, StyleSheet, TextInput, View } from 'react-native';
 
 import { AppText } from '@/components/ui/app-text';
 import { Card } from '@/components/ui/card';
-import { Chip } from '@/components/ui/chip';
 import { ListGroup, ListRow } from '@/components/ui/list-row';
 import { Screen } from '@/components/ui/screen';
-import { FontSize, Spacing } from '@/constants/theme';
-import type { ThemePreference, UnlockMethod } from '@/constants/types';
+import { FontSize, Radius, Spacing } from '@/constants/theme';
+import type { ThemePreference } from '@/constants/types';
 import { useBlocker } from '@/context/blocker-context';
 import { useSettings } from '@/context/settings-context';
 import { useTheme } from '@/hooks/use-theme';
-import { navigationRef } from '@/navigation/navigation-ref';
 import type { MainTabScreenProps } from '@/navigation/types';
-import { clearAll } from '@/utils/storage';
-
-export const UnlockMethodLabels: Record<UnlockMethod, string> = {
-  timer: 'Wait timer',
-  pin: 'PIN code',
-  none: 'Instant',
-};
 
 const ThemeOptions: { id: ThemePreference; label: string }[] = [
   { id: 'system', label: 'System' },
@@ -39,8 +29,8 @@ function SectionLabel({ children }: { children: string }) {
 
 export function SettingsScreen({ navigation }: MainTabScreenProps<'Settings'>) {
   const { colors } = useTheme();
-  const { settings, updateSettings, resetSettings } = useSettings();
-  const { permissions, resetBlocker, blockedAppIds, schedules } = useBlocker();
+  const { settings, updateSettings } = useSettings();
+  const { permissions, blockedAppIds, schedules } = useBlocker();
 
   const grantedCount = Object.values(permissions).filter(Boolean).length;
   const permissionTotal = Object.keys(permissions).length;
@@ -52,28 +42,12 @@ export function SettingsScreen({ navigation }: MainTabScreenProps<'Settings'>) {
     }
     Alert.alert(
       'Turn on strict mode?',
-      'You will not be able to unlock apps, end focus sessions early, or edit active schedules.',
+      'You will not be able to end focus sessions early or edit active schedules.',
       [
         { text: 'Cancel', style: 'cancel' },
         { text: 'Turn on', onPress: () => updateSettings({ strictMode: true }) },
       ]
     );
-  };
-
-  const resetAll = () => {
-    Alert.alert('Reset all data?', 'This removes your block list, schedules and settings.', [
-      { text: 'Cancel', style: 'cancel' },
-      {
-        text: 'Reset',
-        style: 'destructive',
-        onPress: async () => {
-          await clearAll();
-          resetBlocker();
-          resetSettings();
-          navigationRef.reset({ index: 0, routes: [{ name: 'Onboarding' }] });
-        },
-      },
-    ]);
   };
 
   return (
@@ -109,16 +83,9 @@ export function SettingsScreen({ navigation }: MainTabScreenProps<'Settings'>) {
           <ListRow
             icon="shield"
             title="Strict mode"
-            subtitle="No unlocking or ending sessions early"
+            subtitle="No ending sessions early"
             switchValue={settings.strictMode}
             onSwitchChange={toggleStrictMode}
-          />
-          <ListRow
-            icon="key"
-            title="Unlock rules"
-            value={UnlockMethodLabels[settings.unlockMethod]}
-            onPress={() => navigation.navigate('UnlockSettings')}
-            disabled={settings.strictMode}
           />
           <ListRow
             icon="color-palette"
@@ -138,16 +105,30 @@ export function SettingsScreen({ navigation }: MainTabScreenProps<'Settings'>) {
         <SectionLabel>Preferences</SectionLabel>
         <ListGroup>
           <View style={styles.themeRow}>
-            <AppText variant="label">Appearance</AppText>
-            <View style={styles.themeChips}>
-              {ThemeOptions.map((o) => (
-                <Chip
-                  key={o.id}
-                  label={o.label}
-                  selected={settings.themePreference === o.id}
-                  onPress={() => updateSettings({ themePreference: o.id })}
-                />
-              ))}
+            <View style={[styles.themeIcon, { backgroundColor: colors.primarySoft }]}>
+              <Ionicons name="contrast" size={18} color={colors.primary} />
+            </View>
+            <AppText variant="label" numberOfLines={1} style={styles.themeTitle}>
+              Appearance
+            </AppText>
+            <View style={[styles.segment, { backgroundColor: colors.background }]}>
+              {ThemeOptions.map((o) => {
+                const selected = settings.themePreference === o.id;
+                return (
+                  <Pressable
+                    key={o.id}
+                    accessibilityRole="button"
+                    accessibilityState={{ selected }}
+                    onPress={() => updateSettings({ themePreference: o.id })}
+                    style={[styles.segmentItem, selected && { backgroundColor: colors.primary }]}>
+                    <AppText
+                      variant="caption"
+                      style={[styles.segmentLabel, { color: selected ? colors.white : colors.textSecondary }]}>
+                      {o.label}
+                    </AppText>
+                  </Pressable>
+                );
+              })}
             </View>
           </View>
           <ListRow
@@ -163,35 +144,15 @@ export function SettingsScreen({ navigation }: MainTabScreenProps<'Settings'>) {
       <View>
         <SectionLabel>About</SectionLabel>
         <ListGroup>
-          <ListRow icon="information-circle" title={`About ${AppConfig.name}`} onPress={() => navigation.navigate('About')} />
+          <ListRow icon="information-circle" title="About Us" onPress={() => navigation.navigate('About')} />
           <ListRow
-            icon="document-text"
+            icon="shield-checkmark"
             title="Privacy policy"
-            onPress={() => WebBrowser.openBrowserAsync(AppConfig.privacyPolicyUrl)}
+            onPress={() => navigation.navigate('PrivacyPolicy')}
           />
-          <ListRow
-            icon="reader"
-            title="Terms of service"
-            onPress={() => WebBrowser.openBrowserAsync(AppConfig.termsUrl)}
-          />
-          <ListRow
-            icon="mail"
-            title="Contact support"
-            onPress={() => Linking.openURL(`mailto:${AppConfig.supportEmail}`)}
-          />
+          <ListRow icon="document-text" title="Terms of service" onPress={() => navigation.navigate('Terms')} />
+          <ListRow icon="mail" title="Contact support" onPress={() => navigation.navigate('ContactSupport')} />
           <ListRow icon="pricetag" title="Version" value={AppConfig.version} />
-        </ListGroup>
-      </View>
-
-      <View>
-        <SectionLabel>Danger zone</SectionLabel>
-        <ListGroup>
-          <ListRow
-            icon="refresh"
-            title="Replay onboarding"
-            onPress={() => navigationRef.reset({ index: 0, routes: [{ name: 'Onboarding' }] })}
-          />
-          <ListRow icon="trash" title="Reset all data" destructive onPress={resetAll} />
         </ListGroup>
       </View>
     </Screen>
@@ -205,6 +166,17 @@ const styles = StyleSheet.create({
   avatar: { width: 52, height: 52, borderRadius: 26, alignItems: 'center', justifyContent: 'center' },
   profileText: { flex: 1, gap: 2 },
   nameInput: { fontSize: FontSize.lg, fontWeight: '700', paddingVertical: 0 },
-  themeRow: { paddingHorizontal: Spacing.lg, paddingVertical: Spacing.md, gap: Spacing.md },
-  themeChips: { flexDirection: 'row', gap: Spacing.sm },
+  themeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.md,
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: Spacing.md,
+    minHeight: 56,
+  },
+  themeIcon: { width: 34, height: 34, borderRadius: Radius.sm, alignItems: 'center', justifyContent: 'center' },
+  themeTitle: { flex: 1 },
+  segment: { flexDirection: 'row', padding: 3, borderRadius: Radius.full },
+  segmentItem: { paddingHorizontal: Spacing.sm + 2, paddingVertical: 6, borderRadius: Radius.full },
+  segmentLabel: { fontWeight: '600' },
 });

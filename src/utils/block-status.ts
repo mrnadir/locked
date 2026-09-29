@@ -1,10 +1,4 @@
-import type {
-  ActiveBlock,
-  BlockStatus,
-  FocusSession,
-  Schedule,
-  TemporaryUnlock,
-} from '@/constants/types';
+import type { ActiveBlock, BlockStatus, FocusSession, Schedule } from '@/constants/types';
 import { formatTimeOfDate, parseDateKey, toDateKey } from '@/utils/format';
 
 const MINUTE_MS = 60_000;
@@ -122,12 +116,4 @@ export function summarizeBlocks(blocks: ActiveBlock[]): BlockStatus {
   const first = blocks[0];
   if (!first) return { active: false, reason: null, until: null, label: 'Blocking is off' };
   return { active: true, reason: first.reason, until: first.until, label: first.label };
-}
-
-export function isTemporarilyUnlocked(
-  appId: string,
-  unlocks: TemporaryUnlock[],
-  now: number
-): TemporaryUnlock | undefined {
-  return unlocks.find((u) => u.appId === appId && u.until > now);
 }

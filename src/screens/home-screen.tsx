@@ -41,7 +41,6 @@ export function HomeScreen({ navigation }: MainTabScreenProps<'Home'>) {
     usage,
     refreshUsage,
     getApp,
-    unlocksUsedToday,
     schedules,
     getScheduleApps,
     now,
@@ -61,8 +60,6 @@ export function HomeScreen({ navigation }: MainTabScreenProps<'Home'>) {
     .map((schedule) => ({ schedule, window: getNextWindow(schedule, new Date(now)) }))
     .filter((u) => u.window !== null)
     .sort((a, b) => (a.window?.start ?? 0) - (b.window?.start ?? 0));
-  const unlocksLeft = settings.strictMode ? 0 : Math.max(0, settings.maxUnlocksPerDay - unlocksUsedToday);
-
   const confirmStop = () => {
     if (settings.strictMode) {
       Alert.alert('Strict mode is on', 'You cannot end a focus session early while strict mode is enabled.');
@@ -181,7 +178,6 @@ export function HomeScreen({ navigation }: MainTabScreenProps<'Home'>) {
 
       <View style={styles.tiles}>
         <StatTile icon="phone-portrait" label="Screen time today" value={formatMinutes(today?.totalMinutes ?? 0)} />
-        <StatTile icon="key" label="Unlocks left" value={String(unlocksLeft)} tint={colors.warning} />
       </View>
 
       <SectionHeader
@@ -251,7 +247,7 @@ const styles = StyleSheet.create({
   customText: { flex: 1, gap: 2 },
   focusTitle: { flexDirection: 'row', alignItems: 'center', gap: Spacing.sm },
   chips: { gap: Spacing.sm },
-  tiles: { flexDirection: 'row', gap: Spacing.md },
+  tiles: { flexDirection: 'row' },
   appRow: { gap: Spacing.lg },
   appCell: { alignItems: 'center', gap: Spacing.xs, width: 64 },
 });

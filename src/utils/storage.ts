@@ -24,7 +24,3 @@ export async function saveJSON(key: string, value: unknown): Promise<void> {
     console.warn(`Failed to save "${key}"`, error);
   }
 }
-
-export async function clearAll(): Promise<void> {
-  await AsyncStorage.multiRemove(Object.values(StorageKeys));
-}

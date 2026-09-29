@@ -1,4 +1,3 @@
-import { useNavigation } from '@react-navigation/native';
 import { Alert } from 'react-native';
 
 import type { Schedule } from '@/constants/types';
@@ -7,7 +6,6 @@ import { useSettings } from '@/context/settings-context';
 import { isScheduleLocked } from '@/utils/block-status';
 
 export function useScheduleToggle() {
-  const navigation = useNavigation();
   const { settings } = useSettings();
   const { toggleSchedule } = useBlocker();
 
@@ -16,9 +14,6 @@ export function useScheduleToggle() {
       toggleSchedule(schedule.id);
       return;
     }
-    Alert.alert('Block is locked', 'Strict mode is on and this block is running. Open it to unlock with your PIN.', [
-      { text: 'Cancel', style: 'cancel' },
-      { text: 'Open', onPress: () => navigation.navigate('ScheduleEditor', { scheduleId: schedule.id }) },
-    ]);
+    Alert.alert('Block is locked', 'Strict mode is on and this block is running. It cannot be turned off until it finishes.');
   };
 }

@@ -27,9 +27,10 @@ export type RootStackParamList = {
       }
     | undefined;
   BlockScreenCustomize: undefined;
-  UnlockSettings: undefined;
-  PinSetup: undefined;
   About: undefined;
+  PrivacyPolicy: undefined;
+  Terms: undefined;
+  ContactSupport: undefined;
 };
 
 export type RootStackScreenProps<T extends keyof RootStackParamList> = NativeStackScreenProps<

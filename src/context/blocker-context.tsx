@@ -10,16 +10,9 @@ import type {
   PermissionKind,
   PermissionStatus,
   Schedule,
-  TemporaryUnlock,
 } from '@/constants/types';
 import { getAppBlocker } from '@/utils/app-blocker';
-import {
-  getActiveBlocks,
-  isScheduleFinished,
-  isTemporarilyUnlocked,
-  summarizeBlocks,
-} from '@/utils/block-status';
-import { toDateKey } from '@/utils/format';
+import { getActiveBlocks, isScheduleFinished, summarizeBlocks } from '@/utils/block-status';
 import { loadJSON, saveJSON, StorageKeys } from '@/utils/storage';
 
 const blocker = getAppBlocker();
@@ -35,8 +28,6 @@ interface PersistedBlockerState {
   schedules: Schedule[];
   alwaysOn: boolean;
   focusSession: FocusSession | null;
-  unlocks: TemporaryUnlock[];
-  unlockLog: { date: string; count: number };
 }
 
 const DefaultBlockerState: PersistedBlockerState = {
@@ -44,8 +35,6 @@ const DefaultBlockerState: PersistedBlockerState = {
   schedules: DefaultSchedules,
   alwaysOn: false,
   focusSession: null,
-  unlocks: [],
-  unlockLog: { date: '', count: 0 },
 };
 
 interface BlockerContextValue extends PersistedBlockerState {
@@ -68,7 +57,7 @@ interface BlockerContextValue extends PersistedBlockerState {
   setBlockedApps: (appIds: string[]) => void;
   toggleBlockedApp: (appId: string) => boolean;
   isAppBlockedNow: (appId: string) => boolean;
-  /** Apps being intercepted right now (after temporary unlocks). */
+  /** Apps being intercepted right now. */
   activeBlockedAppIds: string[];
   /** The block currently responsible for locking `appId`, if any. */
   getAppBlock: (appId: string) => ActiveBlock | undefined;
@@ -81,10 +70,6 @@ interface BlockerContextValue extends PersistedBlockerState {
   deleteSchedule: (scheduleId: string) => void;
   toggleSchedule: (scheduleId: string) => void;
   getScheduleApps: (schedule: Schedule) => InstalledApp[];
-
-  unlocksUsedToday: number;
-  unlockApp: (appId: string, minutes: number) => void;
-  resetBlocker: () => void;
 }
 
 const BlockerContext = createContext<BlockerContextValue | null>(null);
@@ -147,17 +132,12 @@ export function BlockerProvider({ children }: PropsWithChildren) {
   });
   const blockStatus = summarizeBlocks(activeBlocks);
 
-  const activeBlockList = [...new Set(activeBlocks.flatMap((b) => b.appIds))].filter(
-    (id) => !isTemporarilyUnlocked(id, state.unlocks, now)
-  );
+  const activeBlockList = [...new Set(activeBlocks.flatMap((b) => b.appIds))];
   const activeBlockKey = activeBlockList.join('|');
 
   useEffect(() => {
     blocker.syncBlockList(activeBlockKey ? activeBlockKey.split('|') : []);
   }, [activeBlockKey]);
-
-  const todayKey = toDateKey(new Date(now));
-  const unlocksUsedToday = state.unlockLog.date === todayKey ? state.unlockLog.count : 0;
 
   const loadInstalledApps = async () => {
     setAppsLoading(true);
@@ -248,24 +228,6 @@ export function BlockerProvider({ children }: PropsWithChildren) {
       (schedule.appIds?.length ? schedule.appIds : state.blockedAppIds)
         .map((id) => installedApps.find((a) => a.id === id))
         .filter((a) => a !== undefined),
-
-    unlocksUsedToday,
-    unlockApp: (appId, minutes) => {
-      const current = Date.now();
-      setNow(current);
-      setState((prev) => ({
-        ...prev,
-        unlocks: [
-          ...prev.unlocks.filter((u) => u.appId !== appId && u.until > current),
-          { appId, until: current + minutes * 60_000 },
-        ],
-        unlockLog: {
-          date: todayKey,
-          count: (prev.unlockLog.date === todayKey ? prev.unlockLog.count : 0) + 1,
-        },
-      }));
-    },
-    resetBlocker: () => setState(DefaultBlockerState),
   };
 
   return <BlockerContext.Provider value={value}>{children}</BlockerContext.Provider>;

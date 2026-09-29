@@ -12,7 +12,6 @@ import {
 } from "react-native";
 
 import { AppListItem } from "@/components/app-list-item";
-import { PinSheet } from "@/components/pin-sheet";
 import { TimePickerField } from "@/components/time-picker-field";
 import { AppIcon } from "@/components/ui/app-icon";
 import { AppText } from "@/components/ui/app-text";
@@ -110,16 +109,8 @@ export function ScheduleEditorScreen({
     initialCustomDays(existing),
   );
 
-  const [pinUnlocked, setPinUnlocked] = useState(false);
-  const [unlockOpen, setUnlockOpen] = useState(false);
-
-  const unlockPin = settings.pin;
   const locked =
-    !!existing &&
-    !pinUnlocked &&
-    isScheduleLocked(existing, settings.strictMode, new Date());
-
-  const openUnlock = () => setUnlockOpen(true);
+    !!existing && isScheduleLocked(existing, settings.strictMode, new Date());
 
   useLayoutEffect(() => {
     navigation.setOptions({ title: existing ? "Edit block" : "New block" });
@@ -324,22 +315,8 @@ export function ScheduleEditorScreen({
           >
             <AppText variant="label" color="warning">
               Strict mode: this block is running right now and cannot be
-              changed.
+              changed until it finishes.
             </AppText>
-            {unlockPin ? (
-              <Button
-                title="Unlock with PIN"
-                icon="keypad"
-                size="md"
-                color={colors.warning}
-                onPress={openUnlock}
-              />
-            ) : (
-              <AppText variant="caption" color="textSecondary">
-                No PIN is set, so this block can&apos;t be unlocked early. Set a
-                PIN in Unlock rules before turning on strict mode.
-              </AppText>
-            )}
           </Card>
         )}
 
@@ -473,17 +450,6 @@ export function ScheduleEditorScreen({
           />
         </View>
       </ScrollView>
-
-      <PinSheet
-        visible={unlockOpen}
-        expectedPin={unlockPin}
-        hint="To unlock this block"
-        onClose={() => setUnlockOpen(false)}
-        onSuccess={() => {
-          setPinUnlocked(true);
-          setUnlockOpen(false);
-        }}
-      />
     </Screen>
   );
 }

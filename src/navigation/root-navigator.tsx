@@ -9,13 +9,13 @@ import { AppSelectionScreen } from '@/screens/app-selection-screen';
 import { AppUsageDetailScreen } from '@/screens/app-usage-detail-screen';
 import { BlockOverlayScreen } from '@/screens/block-overlay-screen';
 import { BlockScreenCustomizeScreen } from '@/screens/block-screen-customize-screen';
+import { ContactSupportScreen } from '@/screens/contact-support-screen';
 import { OnboardingScreen } from '@/screens/onboarding-screen';
 import { PermissionsScreen } from '@/screens/permissions-screen';
-import { PinSetupScreen } from '@/screens/pin-setup-screen';
+import { PrivacyPolicyScreen } from '@/screens/privacy-policy-screen';
 import { ScheduleEditorScreen } from '@/screens/schedule-editor-screen';
 import { SplashScreen } from '@/screens/splash-screen';
-import { UnlockSettingsScreen } from '@/screens/unlock-settings-screen';
-
+import { TermsScreen } from '@/screens/terms-screen';
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export function RootNavigator() {
@@ -60,9 +60,10 @@ export function RootNavigator() {
         <Stack.Screen name="AppUsageDetail" component={AppUsageDetailScreen} />
         <Stack.Screen name="ScheduleEditor" component={ScheduleEditorScreen} options={{ title: 'Schedule' }} />
         <Stack.Screen name="BlockScreenCustomize" component={BlockScreenCustomizeScreen} options={{ title: 'Block screen' }} />
-        <Stack.Screen name="UnlockSettings" component={UnlockSettingsScreen} options={{ title: 'Unlock rules' }} />
-        <Stack.Screen name="PinSetup" component={PinSetupScreen} options={{ title: 'PIN', presentation: 'modal' }} />
-        <Stack.Screen name="About" component={AboutScreen} options={{ title: 'About' }} />
+        <Stack.Screen name="About" component={AboutScreen} options={{ title: 'About Us' }} />
+        <Stack.Screen name="PrivacyPolicy" component={PrivacyPolicyScreen} options={{ title: 'Privacy policy' }} />
+        <Stack.Screen name="Terms" component={TermsScreen} options={{ title: 'Terms of service' }} />
+        <Stack.Screen name="ContactSupport" component={ContactSupportScreen} options={{ title: 'Contact support' }} />
       </Stack.Group>
 
       <Stack.Screen
